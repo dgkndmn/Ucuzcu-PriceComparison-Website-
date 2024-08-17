@@ -27,10 +27,11 @@ def product_view(request):
         return render(request, 'base.html', {'cheapest':cheapest, 'all_products': results})
 
     else:  
+        hepsiburada_cheapest = scrape_hepsiburada_prices(query)
         mediamarkt_cheapest = scrape_mediamarkt_prices(query)
         trendyol_cheapest = scrape_trendyol_prices(query)
         teknosa_cheapest = scrape_teknosa_prices(query)
-        hepsiburada_cheapest = scrape_hepsiburada_prices(query)
+        
         
         results = [hepsiburada_cheapest, trendyol_cheapest, mediamarkt_cheapest, teknosa_cheapest]
         cheapest = find_cheapest_product(results)
@@ -41,6 +42,10 @@ def product_view(request):
 def saveproducts_todb(products):
 
     for product in products:
+        if product is None or product.price is None:
+            print("Eksik değer atlanıyor.")
+            continue
+
         clean_price = re.sub(r'[^\d,\.]', '', product.price)
         clean_price = clean_price.replace('.', '').replace(',', '.').replace('TL', '').replace('–', '').replace('-', '').replace('₺', '')
         print(f"Temiz fiyat kayıt: {clean_price}")
