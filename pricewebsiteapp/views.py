@@ -2,7 +2,16 @@ from django.shortcuts import render
 from .scraper import scrape_hepsiburada_prices, scrape_mediamarkt_prices,scrape_teknosa_prices,scrape_trendyol_prices,find_cheapest_product
 from .models import Product
 from decimal import Decimal
+from .forms import CustomUserCreationForm, CustomPasswordChangeForm
 import re
+from django.contrib.auth.models import User
+from django.urls import reverse_lazy, reverse
+from django.shortcuts import redirect
+from django.contrib.auth import logout
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.views import PasswordChangeView
+from django.views.generic import CreateView
+
 
 # Create your views here.
 
@@ -39,6 +48,11 @@ def product_view(request):
         return render(request, 'base.html', {'cheapest':cheapest, 'all_products': results})
 
 
+def custom_logout(request):
+    logout(request)
+    return redirect('/')
+
+
 def saveproducts_todb(products):
 
     for product in products:
@@ -65,7 +79,21 @@ def saveproducts_todb(products):
                 'site': product.site
             }
         )
-       
+
+class CustomPasswordChangeView(PasswordChangeView):
+    form_class = CustomPasswordChangeForm
+    success_url = reverse_lazy('pricewebsiteapp:home')
+    template_name = "registration/changepassword.html"
+
+
+class SignUpView(CreateView):
+    form_class = CustomUserCreationForm
+    success_url = reverse_lazy("login")
+    template_name = "registration/signup.html"
+
+
+
+
     
     
 

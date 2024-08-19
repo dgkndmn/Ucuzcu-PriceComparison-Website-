@@ -8,5 +8,7 @@ app_name = 'pricewebsiteapp'
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("", views.view_mainpage, name="home"),
-    path('search/', product_view, name="product_view")
+    path('search/', product_view, name="product_view"),
+    path("signup/", views.SignUpView.as_view(), name='signup'),
+    path("changepassword/", views.CustomPasswordChangeView.as_view(), name="changepassword")
 ]
