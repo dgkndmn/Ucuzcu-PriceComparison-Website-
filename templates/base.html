@@ -126,6 +126,7 @@
             right: 30;
         }
 
+
     </style>
 
     <nav class="navbar navbar-expand-lg fixed-top" style="background-color: #e3f2fd;" data-bs-theme="light">
@@ -170,7 +171,7 @@
               {{user.username}}
             </h5>
             <ul class="dropdown-menu">
-              <li><a class="dropdown-item" href="#">Favorilerim</a></li>
+              <li><a class="dropdown-item" href="{% url 'pricewebsiteapp:favourites'%}">Favorilerim</a></li>
               <li><a class="dropdown-item" href="{% url 'pricewebsiteapp:changepassword' %}">Şifre Değiştir</a></li>
               <li><a class="dropdown-item" href="{% url 'logout' %}">Çıkış Yap</a></li>
             </ul>
@@ -182,120 +183,235 @@
     {% block content %}
 
     {% for urun in all_products %}
-      {% if urun %}
-        {% if urun.site == "Trendyol" and urun.name and urun.price and urun.image_url and urun.link %}
-            <div class="card mb-3">
-                <div class="row g-0">
-                    <div class="col-md-4">
-                        <img src="{{ urun.image_url }}" class="img-fluid rounded-start" alt="Mediamarkt Ürünü">
-                    </div>
-                    <div class="col-md-8">
-                        <div class="card-body">
-                            <a href="{{urun.link}}"><h5 class="card-title">{{ urun.name }}</h5></a>
-                            <p class="card-text"><small class="text-body-secondary">Aradığınız ürünün Mediamarkt'taki fiyatı aşağıdaki gibidir.</small></p>
-                            <h5 class="card-price">{{ urun.price }} ₺</h5>
-                            <div class="d-grid gap-2 col-6 mx-auto">
-                                <a href="{{urun.link}}">
-                                    <button class="btn btn-primary" type="button">
-                                        <img src="{% static "shopping.svg" %}" class="shoppingcart">Ürüne Git
-                                    </button>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+    {% if urun and urun.id %}
+      {% if urun.site == "Trendyol" and urun.name and urun.price and urun.image_url and urun.link %}
+        <div class="card mb-3">
+          <div class="row g-0">
+            <div class="col-md-4">
+              <img src="{{ urun.image_url }}" class="img-fluid rounded-start" alt="{{ urun.name }}">
             </div>
-          {% endif %}
+            <div class="col-md-8">
+              <div class="card-body">
+                {% if user.is_authenticated %}
+                  {% if urun.is_favourite %}
+                    <form method="POST" action="{% url 'pricewebsiteapp:remove_from_favourites' urun.id %}">
+                      {% csrf_token %}
+                      <button type="submit" class="btn btn-danger favourite" style="margin-left: 400px; height: 60px; width: 100px; font-family: Roboto; font-size:16px;">Favorilerden Kaldır</button>
+                    </form>
+                  {% else %}
+                    <form method="POST" action="{% url 'pricewebsiteapp:add_to_favourites' urun.id %}">
+                      {% csrf_token %}
+                      <button type="submit" class="btn btn-warning favourite" style="margin-left: 400px; height: 60px; width: 100px; font-family: Roboto; font-size:16px;">Favorilere Ekle</button>
+                    </form>
+                  {% endif %}
+                {% endif %}
+                <a href="{{urun.link}}"><h5 class="card-title">{{ urun.name }}</h5></a>
+                <p class="card-text"><small class="text-body-secondary">Aradığınız ürünün Trendyol'daki fiyatı aşağıdaki gibidir.</small></p>
+                <h5 class="card-price">{{ urun.price }} ₺</h5>
+                <div class="d-grid gap-2 col-6 mx-auto">
+                  <a href="{{urun.link}}">
+                    <button class="btn btn-primary" type="button">
+                      <img src="{% static "shopping.svg" %}" class="shoppingcart">Ürüne Git
+                    </button>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       {% endif %}
-    {% endfor %}
+{%else%}
+{% endif %}
+  {% endfor %}
+  
+  {% for urun in all_products %}
+  {% if urun and urun.id %}
+    {% if urun.site == "Teknosa" and urun.name and urun.price and urun.image_url and urun.link %}
+      <div class="card mb-3">
+        <div class="row g-0">
+          <div class="col-md-4">
+            <img src="{{ urun.image_url }}" class="img-fluid rounded-start" alt="{{ urun.name }}">
+          </div>
+          <div class="col-md-8">
+            <div class="card-body">
+              {% if user.is_authenticated %}
+                {% if urun.is_favourite %}
+                  <form method="POST" action="{% url 'pricewebsiteapp:remove_from_favourites' urun.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger favourite" style="margin-left: 400px; height: 60px; width: 100px; font-family: Roboto; font-size:16px;">Favorilerden Kaldır</button>
+                  </form>
+                {% else %}
+                  <form method="POST" action="{% url 'pricewebsiteapp:add_to_favourites' urun.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-warning favourite" style="margin-left: 400px; height: 60px; width: 100px; font-family: Roboto; font-size:16px;">Favorilere Ekle</button>
+                  </form>
+                {% endif %}
+              {% endif %}
+              <a href="{{urun.link}}"><h5 class="card-title">{{ urun.name }}</h5></a>
+              <p class="card-text"><small class="text-body-secondary">Aradığınız ürünün Teknosa'daki fiyatı aşağıdaki gibidir.</small></p>
+              <h5 class="card-price">{{ urun.price }} ₺</h5>
+              <div class="d-grid gap-2 col-6 mx-auto">
+                <a href="{{urun.link}}">
+                  <button class="btn btn-primary" type="button">
+                    <img src="{% static "shopping.svg" %}" class="shoppingcart">Ürüne Git
+                  </button>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+{%else%}
 
+  {% endif %}
+{% endfor %}
+
+   
       
-    {% for urun in all_products %}
-      {% if urun %}
-        {% if urun.site == "Teknosa" and urun.name and urun.price and urun.image_url and urun.link %}
-            <div class="card mb-3">
-                <div class="row g-0">
-                    <div class="col-md-4">
-                        <img src="{{ urun.image_url }}" class="img-fluid rounded-start" alt="Mediamarkt Ürünü">
-                    </div>
-                    <div class="col-md-8">
-                        <div class="card-body">
-                            <a href="{{urun.link}}"><h5 class="card-title">{{ urun.name }}</h5></a>
-                            <p class="card-text"><small class="text-body-secondary">Aradığınız ürünün Mediamarkt'taki fiyatı aşağıdaki gibidir.</small></p>
-                            <h5 class="card-price">{{ urun.price }} ₺</h5>
-                            <div class="d-grid gap-2 col-6 mx-auto">
-                                <a href="{{urun.link}}">
-                                    <button class="btn btn-primary" type="button">
-                                        <img src="{% static "shopping.svg" %}" class="shoppingcart">Ürüne Git
-                                    </button>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+{% for urun in all_products %}
+{% if urun and urun.id %}
+  {% if urun.site == "Mediamarkt" and urun.name and urun.price and urun.image_url and urun.link %}
+    <div class="card mb-3">
+      <div class="row g-0">
+        <div class="col-md-4">
+          <img src="{{ urun.image_url }}" class="img-fluid rounded-start" alt="{{ urun.name }}">
+        </div>
+        <div class="col-md-8">
+          <div class="card-body">
+            {% if user.is_authenticated %}
+              {% if urun.is_favourite %}
+                <form method="POST" action="{% url 'pricewebsiteapp:remove_from_favourites' urun.id %}">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-danger favourite" style="margin-left: 400px; height: 60px; width: 100px; font-family: Roboto; font-size:16px;">Favorilerden Kaldır</button>
+                </form>
+              {% else %}
+                <form method="POST" action="{% url 'pricewebsiteapp:add_to_favourites' urun.id %}">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-warning favourite" style="margin-left: 400px; height: 60px; width: 100px; font-family: Roboto; font-size:16px;">Favorilere Ekle</button>
+                </form>
+              {% endif %}
+            {% endif %}
+            <a href="{{urun.link}}"><h5 class="card-title">{{ urun.name }}</h5></a>
+            <p class="card-text"><small class="text-body-secondary">Aradığınız ürünün Mediamarkt'daki fiyatı aşağıdaki gibidir.</small></p>
+            <h5 class="card-price">{{ urun.price }} ₺</h5>
+            <div class="d-grid gap-2 col-6 mx-auto">
+              <a href="{{urun.link}}">
+                <button class="btn btn-primary" type="button">
+                  <img src="{% static "shopping.svg" %}" class="shoppingcart">Ürüne Git
+                </button>
+              </a>
             </div>
-          {% endif %}
-      {% endif %}
-    {% endfor %}
-      
-    {% for urun in all_products %}
-      {% if urun %}
-        {% if urun.site == "Mediamarkt" and urun.name and urun.price and urun.image_url and urun.link %}
-            <div class="card mb-3">
-                <div class="row g-0">
-                    <div class="col-md-4">
-                        <img src="{{ urun.image_url }}" class="img-fluid rounded-start" alt="Mediamarkt Ürünü">
-                    </div>
-                    <div class="col-md-8">
-                        <div class="card-body">
-                            <a href="{{urun.link}}"><h5 class="card-title">{{ urun.name }}</h5></a>
-                            <p class="card-text"><small class="text-body-secondary">Aradığınız ürünün Mediamarkt'taki fiyatı aşağıdaki gibidir.</small></p>
-                            <h5 class="card-price">{{ urun.price }} ₺</h5>
-                            <div class="d-grid gap-2 col-6 mx-auto">
-                                <a href="{{urun.link}}">
-                                    <button class="btn btn-primary" type="button">
-                                        <img src="{% static "shopping.svg" %}" class="shoppingcart">Ürüne Git
-                                    </button>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-          {% endif %}
-      {% endif %}
-    {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+{%else%}
+
+{% endif %}
+{% endfor %}
 
     
-    {% for urun in all_products %}
-      {% if urun %}
-        {% if urun.site == "Hepsiburada" and urun.name and urun.price and urun.image_url and urun.link %}
-          <div class="card mb-3">
-              <div class="row g-0">
-                  <div class="col-md-4">
-                      <img src="{{ urun.image_url }}" class="img-fluid rounded-start" alt="Mediamarkt Ürünü">
-                  </div>
-                  <div class="col-md-8">
-                      <div class="card-body">
-                          <a href="{{urun.link}}"><h5 class="card-title">{{ urun.name }}</h5></a>
-                          <p class="card-text"><small class="text-body-secondary">Aradığınız ürünün Mediamarkt'taki fiyatı aşağıdaki gibidir.</small></p>
-                          <h5 class="card-price">{{ urun.price }} ₺</h5>
-                          <div class="d-grid gap-2 col-6 mx-auto">
-                              <a href="{{urun.link}}">
-                                  <button class="btn btn-primary" type="button">
-                                      <img src="{% static "shopping.svg" %}" class="shoppingcart">Ürüne Git
-                                  </button>
-                              </a>
-                          </div>
-                      </div>
-                  </div>
-              </div>
+{% for urun in all_products %}
+{% if urun and urun.id %}
+  {% if urun.site == "Hepsiburada" and urun.name and urun.price and urun.image_url and urun.link %}
+    <div class="card mb-3">
+      <div class="row g-0">
+        <div class="col-md-4">
+          <img src="{{ urun.image_url }}" class="img-fluid rounded-start" alt="{{ urun.name }}">
+        </div>
+        <div class="col-md-8">
+          <div class="card-body">
+            {% if user.is_authenticated %}
+              {% if urun.is_favourite %}
+                <form method="POST" action="{% url 'pricewebsiteapp:remove_from_favourites' urun.id %}">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-danger favourite" style="margin-left: 400px; height: 60px; width: 100px; font-family: Roboto; font-size:16px;">Favorilerden Kaldır</button>
+                </form>
+              {% else %}
+                <form method="POST" action="{% url 'pricewebsiteapp:add_to_favourites' urun.id %}">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-warning favourite" style="margin-left: 400px; height: 60px; width: 100px; font-family: Roboto; font-size:16px;">Favorilere Ekle</button>
+                </form>
+              {% endif %}
+            {% endif %}
+            <a href="{{urun.link}}"><h5 class="card-title">{{ urun.name }}</h5></a>
+            <p class="card-text"><small class="text-body-secondary">Aradığınız ürünün Hepsiburada'daki fiyatı aşağıdaki gibidir.</small></p>
+            <h5 class="card-price">{{ urun.price }} ₺</h5>
+            <div class="d-grid gap-2 col-6 mx-auto">
+              <a href="{{urun.link}}">
+                <button class="btn btn-primary" type="button">
+                  <img src="{% static "shopping.svg" %}" class="shoppingcart">Ürüne Git
+                </button>
+              </a>
+            </div>
           </div>
-        {% endif %}
-      {% endif %}
-    {% endfor %}
+        </div>
+      </div>
+    </div>
+  {% endif %}
+{%else%}
 
-  {%endblock%}
+{% endif %}
+{% endfor %}
 
+{% if message %}
+
+<img src="{% static 'failed.svg' %}" style="width:300px;height:300px; margin-left:600px;">
+<h2 style="text-align: center;margin-top:50px; font-family: Roboto;">{{message}}</h2>
+{% endif %}
+
+{%endblock%}
+
+  
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+      if (window.location.pathname === '/') {
+        document.addEventListener('DOMContentLoaded', function() {
+          const buttons = document.querySelectorAll('.favourite');
+      
+          buttons.forEach(button => {
+              button.addEventListener('click', function(event) {
+                  event.preventDefault();
+                  const form = this.closest('form');
+                  const actionUrl = form.action;
+                  const formData = new FormData(form);
+      
+                  fetch(actionUrl, {
+                      method: 'POST',
+                      headers: {
+                          'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+                      },
+                      body: new URLSearchParams(formData)
+                  }).then(response => {
+                      if (response.ok) {
+                          const btn = button;
+                          if (btn.textContent.includes('Favorilere Ekle')) {
+                              btn.textContent = 'Favorilerden Kaldır';
+                              btn.classList.remove('btn-warning');
+                              btn.classList.add('btn-danger');
+                          } else {
+                              btn.textContent = 'Favorilere Ekle';
+                              btn.classList.remove('btn-danger');
+                              btn.classList.add('btn-warning');
+                          }
+                      } else {
+                          console.error('Fetch request failed');
+                      }
+                  }).catch(error => console.error('Fetch error:', error));
+              });
+          });
+      });
+          console.log('Home sayfasında çalışıyor.');
+      } else {
+         
+      }
+  });
+</script>
+
+
+    
 </body>
 </html>

@@ -6,6 +6,7 @@ from PIL import Image
 from selenium.webdriver.chrome.options import Options
 from .models import Product
 from decimal import Decimal, InvalidOperation
+from selenium.common.exceptions import NoSuchElementException, TimeoutException
 import re
 from fuzzywuzzy import fuzz
 
@@ -155,54 +156,64 @@ def scrape_hepsiburada_prices(query):
     return hb_cheapest
 
 
-
-
 def scrape_teknosa_prices(query):
     driver = webdriver.Chrome('/Users/dogukan/chromedriver-mac-arm64/chromedriver')
     driver.get(f"https://www.teknosa.com/arama/?s={query}")
 
-    WebDriverWait(driver, 120).until(EC.visibility_of_all_elements_located((By.ID, "product-item")))
+    try:
+        WebDriverWait(driver, 120).until(EC.visibility_of_all_elements_located((By.ID, "product-item")))
 
-    products = driver.find_elements(By.ID, "product-item")
-    tk_data = []
+        products = driver.find_elements(By.ID, "product-item")
+        tk_data = []
 
-    urunsayisi = 0
-    aramasayisi = 0
-    while(urunsayisi<1):
-        for product in products:
-            if urunsayisi>=1:
-                break
-            else:
+        urunsayisi = 0
+        aramasayisi = 0
+
+        while urunsayisi < 1 and aramasayisi < 20:
+            for product in products:
+                if urunsayisi >= 1:
+                    break
                 try:
                     productlink = product.find_element(By.CSS_SELECTOR, 'a').get_attribute('href')
-                    productimage = product.find_element(By.CLASS_NAME, "lazy.entered.loaded").get_attribute('srcset')
+                    productimage = product.find_element(By.CSS_SELECTOR, ".lazy.entered.loaded").get_attribute('srcset')
                     productname = product.find_element(By.CLASS_NAME, "prd-title.prd-title-style").text
                     productprice = product.find_element(By.CLASS_NAME, "prc.prc-last").text
                     print(f"Name: {productname}, Price: {productprice}, Image: {productimage}, Link: {productlink}")
-                except Exception:
-                    aramasayisi += 1
-                    if aramasayisi==20:
-                        driver.quit()
-                        return None
-                    else:
-                        continue
-
-                if fuzz.partial_ratio(query.lower(), productname.lower()) > 10:
-                    urunsayisi += 1
-                    tk_data.append(
-                        Product(
-                            name=productname,
-                            price=productprice,
-                            image_url = productimage,
-                            link = productlink,
-                            site = "Teknosa"
+                    
+                    # Fuzzy match threshold
+                    if fuzz.partial_ratio(query.lower(), productname.lower()) > 50:
+                        urunsayisi += 1
+                        tk_data.append(
+                            Product(
+                                name=productname,
+                                price=productprice,
+                                image_url=productimage,
+                                link=productlink,
+                                site="Teknosa"
+                            )
                         )
-                    )
+                except NoSuchElementException as e:
+                    print(f"Element not found: {e}")
+                    aramasayisi += 1
+                    continue
+                except Exception as e:
+                    print(f"An unexpected error occurred: {e}")
+                    driver.quit()
+                    return None
 
+    except TimeoutException as e:
+        print(f"Timeout while loading Teknosa products: {e}")
+        driver.quit()
+        return None
+    finally:
+        driver.quit()
 
-    driver.quit()
+    if not tk_data:
+        return None
+
     tk_cheapest = find_cheapest_product(tk_data)
     return tk_cheapest
+
         
                     
 def scrape_mediamarkt_prices(query):

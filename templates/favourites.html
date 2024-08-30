@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{%load static%}
+
+{%block content%}
+
+<style>
+
+.container{
+    margin-top:20px;
+    border: 1px solid #000;
+    min-height: 550px;
+    height: auto;
+    overflow: auto;
+}
+
+.btn.btn-danger.favourite{
+  margin-left: 125px;
+  margin-top:20px;
+  width:250px;
+  
+}
+
+</style>
+
+
+<h5 class="textt" style="font-family:'Comic Sans MS'; font-size:35px; margin-left:80px;">Favorilerim</h5>
+
+<div class="container">
+{% for favourite in favourites %}
+    <div class="card mb-3">
+        <div class="row g-0">
+          <div class="col-md-4">
+            <img src="{{ favourite.product.image_url }}" class="img-fluid rounded-start" alt="{{ favourite.name }}">
+          </div>
+          <div class="col-md-8">
+            <div class="card-body">
+                
+              <a href="{{favourite.product.link}}"><h5 class="card-title">{{ favourite.product.name }}</h5></a>
+              <h5 class="card-price">{{ favourite.product.price }} ₺</h5>
+              <div class="d-grid gap-2 col-6 mx-auto">
+                <a href="{{favourite.product.link}}">
+                  <button class="btn btn-primary" type="button">
+                    <img src="{% static "shopping.svg" %}" class="shoppingcart">Ürüne Git</img>
+                  </button>
+                </a>
+              </div>
+              <form method="POST" action="{% url 'pricewebsiteapp:removefavourites' favourite.product.id %}" class="remove-favourite-form">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger favourite" style="height: 50px; font-family: Roboto; font-size:16px;">
+                    Favorilerden Kaldır
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+
+{%endfor%}
+</div>
+{% endblock %}
+
+
+{% block extra_js %}
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+      const forms = document.querySelectorAll('.remove-favourite-form');
+  
+      forms.forEach(form => {
+          form.addEventListener('submit', function (event) {
+              event.preventDefault(); // Formun normal şekilde gönderilmesini engeller
+  
+              const formData = new FormData(form);
+              const url = form.action;
+              
+              fetch(url, {
+                  method: 'POST',
+                  body: formData,
+                  headers: {
+                      'X-Requested-With': 'XMLHttpRequest',
+                      'X-CSRFToken': formData.get('csrfmiddlewaretoken') // CSRF token'ı alır
+                  }
+              })
+              .then(response => {
+                  if (response.ok) {
+                      // Form başarıyla gönderildiğinde sayfayı yenile
+                      window.location.reload();
+                  } else {
+                      console.error('Form gönderimi başarısız oldu.');
+                  }
+              })
+              .catch(error => {
+                  console.error('Bir hata oluştu:', error);
+              });
+          });
+      });
+  });
+  </script>
+{% endblock %}
